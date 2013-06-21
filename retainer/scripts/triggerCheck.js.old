@@ -1,0 +1,9 @@
+setInterval( function() {
+$.ajax({
+	type: 'POST',
+	url: 'php/triggerCheck.php',
+	success: function(data) {
+		if(data == 1) alert("Now transfering you to XXXX");
+	}
+});
+}, 1000);

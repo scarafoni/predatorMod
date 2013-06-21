@@ -1,0 +1,3 @@
+- Allow some way to play from web-interface only (i.e. not instantly win when the first player submits their info)
+- Allow definable starting positions (or are these random?)
+ - Can people spawn on top of eachother?

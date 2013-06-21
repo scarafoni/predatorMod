@@ -1,0 +1,28 @@
+<?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+
+include('_db.php');
+
+  try {
+      $dbh = getDatabaseHandle();
+  } catch( PDOException $e ) {
+      echo $e->getMessage();
+  }
+
+
+if( $dbh ) {
+
+	$sql = "select MAX(id) as lastId from triggerFlag";
+	$sth = $dbh->prepare($sql); 
+	$sth->execute();
+	$result = $sth->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_NEXT);
+	$maxId = $result['lastId'];
+	
+	$sql1 ="UPDATE triggerFlag SET firingState = 1 WHERE id = :max";
+	$sth1 = $dbh->prepare($sql1); 
+	$sth1->execute(array(':max' => $maxId));
+	
+}
+
+?>
