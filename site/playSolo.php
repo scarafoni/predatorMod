@@ -15,22 +15,11 @@
 		fclose($file);
 		
 		$file = fopen("ids.php","w");
-		fwrite($file,$id+1);
+		fwrite($file,++$id);
 		fclose($file);
 		return $id;
 	
 	}
-	//$spotFile = fopen("../hotSpots.txt","r");
-	$text = file("../hotSpots.txt",FILE_IGNORE_NEW_LINES);
-	//fclose($spotFile);
-	$hs = $text;//$hs = explode("\n",$text);
-	$hotSpots = array();
-	
-	for($i = 0; $i < sizeof($hs); $i++) {
-		array_push($hotSpots,explode(",",$hs[$i]));
-	}
-
-	
 ?>
 <!DOCTYPE HTML>
 	<head>
@@ -57,14 +46,7 @@
 			//alert(start);
 			var time = 0;
 			var occupied = false;
-			//hot spots
-			var spaces = <?php echo json_encode($hotSpots); ?>;
-			var index = spaces.indexOf("");
-			//alert(spaces);
-			if(index > -1){	
-				spaces.splice(index,1);
-			}
-			//var spaces = [[0,0],[0,1],[0,2],[1,2],[2,2],[2,1],[2,0],[1,0]];
+			var spaces = [[5,5]];
 			//draw board on startup, set up interval
 			$(document).ready(function()
 			{
@@ -77,14 +59,14 @@
 						document.addEventListener("keydown",handleKey,true);
 						document.addEventListener("keydown",stopScroll,true);
 					}
-					else {
+					else if(document.attachEvent) {
 						document.attach("onkeydown",handleKey);
 						document.attach("onkeydown",stopScroll);
 					}
 				}catch(err){alert(err);}
 				
 				if(isObs)
-					id = 0;	
+					id = 1;	
 				drawBoardM(10);
 				try {
 					Initialize("predator",'0',id,'w');
@@ -110,14 +92,14 @@
 						var keyNum = e.keyCode;
 						
 						 //e.preventDefault();
-						if(keyNum == 37)
-							Initialize("predator","0",id,'a');
-						else if(keyNum == 38)
+						if(keyNum == 38)
 							Initialize("predator","0",id,'w');
-						else if(keyNum == 39)
-							Initialize("predator","0",id,'d');
-						else if(keyNum = 40)
+						else if(keyNum == 40)
 							Initialize("predator","0",id,'s');
+						else if(keyNum == 37)
+							Initialize("predator","0",id,'a');
+						else if(keyNum = 39)
+							Initialize("predator","0",id,'d');
 					}
 				}
 			}

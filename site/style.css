@@ -1,6 +1,6 @@
 body
 {
-	height: 600px;
+	height: 650px;
 	padding: 0px;
 	margin: 0px;
 	font-family: Arial;
@@ -79,7 +79,7 @@ table,th, td
 }
 td
 {
-	height: 40px;
-	width: 40px;
+	height: 35px;
+	width: 35px;
 	font-color: black;
 }

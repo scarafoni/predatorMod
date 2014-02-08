@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
 public class Main 
 {	
 	public static void main(String[] args) throws IOException 
@@ -10,8 +11,10 @@ public class Main
         	final boolean filterSide = false;// Boolean.parseBoolean(args[3]);
         	final boolean filterTeam = false;//Boolean.parseBoolean(args[4]);
         	final int radius = 0;//Integer.parseInt(args[5]);
-        	final Board board = new Board(10,preyTeams,predTeams);
+        	final Board board = new Board(10,preyTeams,predTeams,readHotSpots());
 			board.write("site/ids.php","0");
+			board.write("moves.txt", "");
+			//System.out.println("working?");
 	        try
 	        {
 	        	ServerSocket serverSocket = new ServerSocket(port);
@@ -29,6 +32,29 @@ public class Main
 	        	System.out.println("IOException on socket listen" + e);
 	        	e.printStackTrace();
 	        }
+	}
+	
+	public static int[][] readHotSpots() {
+		ArrayList<Integer[]> hotSpots = new ArrayList<Integer[]>(); 
+		try {
+			BufferedReader br =new BufferedReader(new FileReader("hotSpots.txt"));
+			String line = br.readLine();
+			
+			while(line != null) {
+				String[] split = line.split(",");
+				Integer[] toInsert = new Integer[2];
+				toInsert[0] = Integer.parseInt(split[0]);
+				toInsert[1] = Integer.parseInt(split[1]);
+				hotSpots.add(toInsert);
+				line = br.readLine();
+			}
+		}catch(IOException e){}
+		int[][] toReturn = new int[hotSpots.size()][2];
+		for(int i = 0; i < hotSpots.size(); i++) {
+			toReturn[i][0] = hotSpots.get(i)[0];
+			toReturn[i][1] = hotSpots.get(i)[1];
+		}
+		return toReturn;
 	}
 }
 	
@@ -71,16 +97,37 @@ class Server implements Runnable
 			this.type = Piece.PieceType.valueOf(initial[0]);
 			this.team = Integer.parseInt(initial[1]);
 			this.id = Integer.parseInt(initial[2]);
-			if (board.findPiece(this.id) == null)
+			//System.out.println("test");
+			if (board.findPiece(this.id) == null) {
+				//System.out.println("test");
 				board.addPiece(type,team,id);
+				piece = board.findPiece(this.id);
+				String x = ((Integer)piece.x()).toString();
+				String y = ((Integer)piece.y()).toString();
+				String iPos = "start " +x +" "+ y;
+				board.appendMove(System.currentTimeMillis()-start,initial[2],iPos);
+			}
 			
 			piece = board.findPiece(this.id);
 			
 			if(board.isGameOver())
 			{
 				board.writeAll("y");
+				for(int i = 0; i < board.predators.get(0).size(); i++) {
+					Piece p = board.predators.get(0).get(i);
+					String x = ((Integer)p.x()).toString();
+					String y = ((Integer)p.y()).toString();
+					String iPos = "end " +x +" "+ y;
+					board.appendMove(System.currentTimeMillis()-start,p.id().toString(),iPos);
+					
+				}
+				out.close();
+				in.close();
+				clientSocket.close();
 				System.exit(1);
 			}
+			//else
+				//System.out.println("not gae over");
 	
 			if(piece.removed == true)
 			{
@@ -97,9 +144,17 @@ class Server implements Runnable
 						|| inputLine.equals("a")) 
 					board.move(piece,Board.Direction.valueOf(inputLine));
 	
+				else if(inputLine.equals("start")) {
+					Integer x = Integer.parseInt(initial[4]);
+					Integer y = Integer.parseInt(initial[5]);
+					piece.setX(x);
+					piece.setY(y);
+				}
 				String map = board.printBoard(piece,filterSide,filterTeam,radius);
 				board.printAll(filterSide,filterTeam,radius);
-				board.appendMove(System.currentTimeMillis()-start,initial[2],initial[3]);
+				String x = ((Integer)piece.x()).toString();
+				String y = ((Integer)piece.y()).toString();
+				board.appendMove(System.currentTimeMillis()-start,initial[2],initial[3]+" "+x+" "+ y);
 				out.println(map);
 			}
 			out.close();
@@ -107,4 +162,4 @@ class Server implements Runnable
 			clientSocket.close();
 		} catch (IOException e) {e.printStackTrace();}
 	}
-}	    			  
+} 	

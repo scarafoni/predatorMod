@@ -15,6 +15,7 @@ public class Board {
 	public List<ArrayList<Piece>> prey;
 	public List<ArrayList<Piece>> predators;
 	public String[] teams;
+	int[][] spaces;
 	
 	public int boardWidth, boardHeight;
 	
@@ -22,11 +23,11 @@ public class Board {
 	
 	public enum Direction {w,s,a,d};
 	
-	public Board(int width,int prey,int preds)
+	public Board(int width,int prey,int preds,int[][] spaces)
 	{
 		this.boardWidth = width;
 		this.boardHeight = width;
-		this.board = new Piece[boardWidth][boardHeight];
+		this.board = new Piece[boardHeight][boardWidth];
 		
 		this.prey = new ArrayList<ArrayList<Piece>>();
 		for(int i = 0; i < prey; i++)
@@ -35,9 +36,10 @@ public class Board {
 		for(int i = 0; i < preds; i++)
 			this.predators.add(new ArrayList<Piece>());
 		this.done = false;
+		this.spaces = spaces;
 	}
 	public Piece getPiece(int x,int y)
-	{return board[x][y];}
+	{return board[y][x];}
 	
 	public Piece[][] board()
 	{return this.board;}
@@ -45,7 +47,7 @@ public class Board {
 	public void removePrey(Piece p)
 	{
 		p.removed = true;
-		board[p.x()][p.y()] = null;
+		board[p.y()][p.x()] = null;
 	}	
 	
 	public boolean isGameOver()
@@ -54,22 +56,16 @@ public class Board {
 			return true;
 		if(squareFound()) 
 			{
-				writeAll("y");
+				System.out.println("gameover");
 				return true;
 			}
-//		for(int i = 0; i < prey.size(); i++)
-//		{
-//			for(int j = 0; j < prey.get(i).size(); j++)
-//				if(prey.get(i).get(j).removed() == false)
-//					return false;
-//		}
 		return false;
 	}
 	
 	public boolean squareFound()
 	{
 		boolean isPiece = false;
-		int[][] spaces = {{0,0},{0,1},{0,2},{1,2},{2,2},{2,1},{2,0},{1,0}};
+		//int[][] spaces = {{0,0},{0,1},{0,2},{1,2},{2,2},{2,1},{2,0},{1,0}};
 		for( int i = 0; i < spaces.length; i++)
 		{
 			if(getPiece(spaces[i][0], spaces[i][1]) != null)
@@ -120,14 +116,14 @@ public class Board {
 			p = new Piece(x, y, Piece.PieceType.predator,team,id);
 			this.predators.get(team).add(p);
 		}
-		board[x][y] = p;
+		board[y][x] = p;
 	}
 	
 	public boolean occupied(int x, int y)
-	{return(board[x][y] != null);}
+	{return(board[y][x] != null);}
 	
 	public Piece occupied(int x, int y, boolean filler)
-	{return board[x][y];}
+	{return board[y][x];}
 	
 	public Piece findPiece(int id)
 	{
@@ -150,16 +146,16 @@ public class Board {
 		int y = piece.y();
 		switch(dir)
 		{
-			case s: ++x;
+			case d: ++x;
 					    x %= boardWidth;
 					    break;
-			case w:  --x;
+			case a:  --x;
 					    x = (x + boardWidth) % boardWidth;
 					    break;
-			case d:    ++y;
+			case w:  ++y;
 						y %= boardHeight;
 						break;
-			case a:  --y;
+			case s:  --y;
 						y = (y + boardHeight) % boardHeight;
 						break;
 			default: 	return false;
@@ -176,10 +172,10 @@ public class Board {
 				return false;
 		}
 		//move piece
-		board[piece.x()][piece.y()] = null;
+		board[piece.y()][piece.x()] = null;
 		piece.setX(x);
 		piece.setY(y);
-		board[x][y] = piece;
+		board[y][x] = piece;
 		
 		return true;
 	}
@@ -190,17 +186,19 @@ public class Board {
 		//filterSide- can see members of the same side
 		Piece p;
 		String finalString = "";
-		for (int col = 0; col < boardWidth; ++col)
+		//for (int col = 0; col < boardWidth; ++col)
+		for(int y = boardWidth-1; y > -1; --y)
 		{
-			for (int row = 0; row < boardHeight; ++row)
+			for (int x = 0; x < boardHeight; ++x)
+			//for(int row = boardHeight-1; row > -1; --row)
 			{
-				p = board[col][row];
+				p = board[y][x];
 				//if sight restrictions are imposed
 				if(filterPos > 0)
 				{
 					//if it is outside a certain distance of the piece
-					if(!((col >= (piece.x() - filterPos) && col <= (piece.x() + filterPos))
-						&& (row >= (piece.y() - filterPos) && row <= (piece.y() + filterPos))))
+					if(!((x >= (piece.x() - filterPos) && x <= (piece.x() + filterPos))
+						&& (y >= (piece.y() - filterPos) && y <= (piece.y() + filterPos))))
 					{
 						//if the space isn't null
 						if (p != null) 
